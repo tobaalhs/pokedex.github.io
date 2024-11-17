@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokédex</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="pokedex">
+            <div class="pokedex-header">
+                <div class="header-lights">
+                    <div class="light light-big"></div>
+                    <div class="light light-small red"></div>
+                    <div class="light light-small yellow"></div>
+                    <div class="light light-small green"></div>
+                </div>
+                <h1>Pokédex</h1>
+            </div>
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Ingresa el nombre o ID del Pokémon"
+                >
+                <button id="searchButton">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            <div id="errorMessage" class="error-message"></div>
+            <div id="loadingMessage" class="loading-message">
+                <div class="pokeball-loading"></div>
+                <span>Buscando Pokémon...</span>
+            </div>
+            <div id="pokemonInfo" class="pokemon-info"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
