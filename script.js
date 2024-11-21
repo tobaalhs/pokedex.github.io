@@ -15,13 +15,107 @@ document.addEventListener('DOMContentLoaded', () => {
         return `#${String(id).padStart(3, '0')}`;
     }
 
-    // tipos en espaÑol
+    // tipos en español
     const typeTranslations = {
         normal: 'Normal', fire: 'Fuego', water: 'Agua', electric: 'Eléctrico',
         grass: 'Planta', ice: 'Hielo', fighting: 'Lucha', poison: 'Veneno',
         ground: 'Tierra', flying: 'Volador', psychic: 'Psíquico', bug: 'Bicho',
         rock: 'Roca', ghost: 'Fantasma', dragon: 'Dragón', dark: 'Siniestro',
         steel: 'Acero', fairy: 'Hada'
+    };
+
+    // Mapa de efectividades de tipos
+    const typeEffectiveness = {
+        normal: {
+            weak: ['fighting'],
+            immune: ['ghost'],
+            resistant: []
+        },
+        fire: {
+            weak: ['water', 'ground', 'rock'],
+            immune: [],
+            resistant: ['fire', 'grass', 'ice', 'bug', 'steel', 'fairy']
+        },
+        water: {
+            weak: ['electric', 'grass'],
+            immune: [],
+            resistant: ['fire', 'water', 'ice', 'steel']
+        },
+        electric: {
+            weak: ['ground'],
+            immune: [],
+            resistant: ['electric', 'flying', 'steel']
+        },
+        grass: {
+            weak: ['fire', 'ice', 'poison', 'flying', 'bug'],
+            immune: [],
+            resistant: ['water', 'electric', 'grass', 'ground']
+        },
+        ice: {
+            weak: ['fire', 'fighting', 'rock', 'steel'],
+            immune: [],
+            resistant: ['ice']
+        },
+        fighting: {
+            weak: ['flying', 'psychic', 'fairy'],
+            immune: [],
+            resistant: ['bug', 'rock', 'dark']
+        },
+        poison: {
+            weak: ['ground', 'psychic'],
+            immune: [],
+            resistant: ['grass', 'fighting', 'poison', 'bug', 'fairy']
+        },
+        ground: {
+            weak: ['water', 'grass', 'ice'],
+            immune: ['electric'],
+            resistant: ['poison', 'rock']
+        },
+        flying: {
+            weak: ['electric', 'ice', 'rock'],
+            immune: ['ground'],
+            resistant: ['grass', 'fighting', 'bug']
+        },
+        psychic: {
+            weak: ['bug', 'ghost', 'dark'],
+            immune: [],
+            resistant: ['fighting', 'psychic']
+        },
+        bug: {
+            weak: ['fire', 'flying', 'rock'],
+            immune: [],
+            resistant: ['grass', 'fighting', 'ground']
+        },
+        rock: {
+            weak: ['water', 'grass', 'fighting', 'ground', 'steel'],
+            immune: [],
+            resistant: ['normal', 'fire', 'poison', 'flying']
+        },
+        ghost: {
+            weak: ['ghost', 'dark'],
+            immune: ['normal', 'fighting'],
+            resistant: ['poison', 'bug']
+        },
+        dragon: {
+            weak: ['ice', 'dragon', 'fairy'],
+            immune: [],
+            resistant: ['fire', 'water', 'electric', 'grass']
+        },
+        dark: {
+            weak: ['fighting', 'bug', 'fairy'],
+            immune: ['psychic'],
+            resistant: ['ghost', 'dark']
+        },
+        steel: {
+            weak: ['fire', 'fighting', 'ground'],
+            immune: ['poison'],
+            resistant: ['normal', 'grass', 'ice', 'flying', 'psychic', 'bug', 'rock', 'dragon', 'steel', 'fairy']
+        },
+        fairy: {
+            weak: ['poison', 'steel'],
+            immune: ['dragon'],
+            resistant: ['fighting', 'bug', 'dark']
+        }
     };
 
     // stats cambio de nombre
@@ -44,6 +138,32 @@ document.addEventListener('DOMContentLoaded', () => {
         if (statValue >= 70) return '#CDDC39';
         if (statValue >= 50) return '#FFC107';
         return '#FF5722';
+    }
+
+    // Función para calcular debilidades
+    function calculateWeaknesses(types) {
+        let weaknesses = new Set();
+        let immunities = new Set();
+        let resistances = new Set();
+
+        // Primero recopilamos todas las debilidades, inmunidades y resistencias
+        types.forEach(typeObj => {
+            const type = typeObj.type.name;
+            const typeData = typeEffectiveness[type];
+
+            typeData.weak.forEach(w => weaknesses.add(w));
+            typeData.immune.forEach(i => immunities.add(i));
+            typeData.resistant.forEach(r => resistances.add(r));
+        });
+
+        // Filtramos las debilidades basándonos en inmunidades y resistencias
+        let finalWeaknesses = new Set(
+            [...weaknesses].filter(type => 
+                !immunities.has(type) && !resistances.has(type)
+            )
+        );
+
+        return [...finalWeaknesses];
     }
 
     // evoluciones
@@ -169,7 +289,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             displayPokemonInfo(pokemonData, speciesData, evolutionDetails);
             
-            
             window.history.pushState({}, '', `?pokemon=${search}`);
             currentPokemonId = pokemonData.id;
 
@@ -190,6 +309,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const genera = species.genera.find(g => g.language.name === 'es')?.genus || 
             species.genera[0].genus;
 
+        // Calcular debilidades
+        const weaknesses = calculateWeaknesses(pokemon.types);
+
         const html = `
             <div class="pokemon-basic-info">
                 <div class="pokemon-header">
@@ -199,10 +321,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="pokemon-genus">${genera}</div>
                     </div>
                     <button 
-                    onclick="handleNextPokemon()" 
-                    class="nav-button"
-                    ${pokemon.id === 1025 ? 'disabled' : ''}
-                >→</button>
+                        onclick="handleNextPokemon()" 
+                        class="nav-button"
+                        ${pokemon.id === 1025 ? 'disabled' : ''}
+                    >→</button>
                 </div>
 
                 <div class="pokemon-showcase">
@@ -236,6 +358,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="detail-item">
                         <span class="detail-label">Hábitat</span>
                         <span class="detail-value">${species.habitat ? capitalize(species.habitat.name) : 'Desconocido'}</span>
+                    </div>
+                </div>
+
+                <div class="weaknesses-container">
+                    <h3>Debilidades</h3>
+                    <div class="pokemon-types">
+                        ${weaknesses.map(type => `
+                            <span class="type-badge ${type}">
+                                ${typeTranslations[type]}
+                            </span>
+                        `).join('')}
                     </div>
                 </div>
             </div>
@@ -282,11 +415,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         pokemonInfo.innerHTML = html;
         pokemonInfo.classList.add('visible');
-
-        // Remover la clase después de la animación
-        setTimeout(() => {
-            pokemonInfo.classList.remove('fade-in');
-        }, 300); // 300ms = 0.3s (duración de la animación)
     }
 
     searchButton.addEventListener('click', searchPokemon);
@@ -301,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
         if (e.key === 'ArrowLeft' && currentPokemonId > 1) {
             handlePrevPokemon();
-        } else if (e.key === 'ArrowRight' && currentPokemonId < MAX_POKEMON_ID) {
+        } else if (e.key === 'ArrowRight' && currentPokemonId < 1025) {
             handleNextPokemon();
         }
     });
@@ -322,7 +450,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
-
     window.handlePokemonClick = function(id) {
         searchInput.value = id.toString();
         searchPokemon();
