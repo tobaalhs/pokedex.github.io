@@ -519,3 +519,21 @@ button:hover:not([disabled]) {
         font-size: 12px;
     }
 }
+
+.weaknesses-container {
+    margin: 30px 0;
+    text-align: center;
+}
+
+.weaknesses-container h3 {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Añadir efecto de hover específico para las debilidades */
+.weaknesses-container .type-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
